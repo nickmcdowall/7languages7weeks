@@ -7,11 +7,11 @@ author(john, timeMachine).
 author(steve, spacedOut).
 author(bob, yoyo).
 
-author_has_a_book_in_stock(X) :-
-	author(X, Z), book_in_stock(Z, _).
+author_has_a_book_in_stock(Name) :-
+	author(Name, Title), book_in_stock(Title, _).
 
-author_has_book_in_stock(X, Y) :-
-	author(X, Y), book_in_stock(Y, _).
+author_has_book_in_stock(Name, Title) :-
+	author(Name, Title), book_in_stock(Title, _).
 	
-author_has_genre_in_stock(X, Y) :-
-	author(X, Z), book_in_stock(Z, Y).
+author_has_genre_in_stock(Name, Genre) :-
+	author(Name, Title), book_in_stock(Title, Genre).
