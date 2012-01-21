@@ -21,15 +21,10 @@ goalie(olly).
 goalie(sam).
 goalie(chucks).
 
-
 unavailable(sam, injured).
 unavailable(andre, injured).
 unavailable(paul, suspended).
 unavailable(bigNick, holiday).
-
-suspended(paul).
-
-team_goalie(Goalie) :- player(Goalie, goalie).
 
 team(Goalie, Defender, MidfieldA, MidfieldB, Striker) :-
 	goalie(Goalie),
