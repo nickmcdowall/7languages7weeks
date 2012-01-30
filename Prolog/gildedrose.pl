@@ -37,6 +37,51 @@ maximumQuality(modestDecrease, 50).
 maximumQuality(static, 80).
 	
 	
+
+updateQuality(Item, NextQuality, NextSellin):-
+	item(Item, UpdateType, AgeingType),
+	startingQuality(Item, StartingQuality),
+	startingSellin(Item, StartingSellin),
+	nextQuality(StartingQuality, UpdateType, StartingSellin, NextQuality),
+	nextSellin(StartingSellin, AgeingType, NextSellin).
+
+updateQuality(Item, NextQuality, StartingSellin, StartingQuality):-
+	item(Item, UpdateType, AgeingType),
+	nextQuality(StartingQuality, UpdateType, StartingSellin, NextQuality),
+	nextSellin(StartingSellin, AgeingType, NextSellin).
+
+
+degradingFactor(X, Y):- between(1, inf, X), Y=1.
+degradingFactor(X, 2):- \+between(1, inf, X).
+
+nextQuality(Quality, UpdateType, Sellin, NextQuality) :-
+	degradingFactor(Sellin, DegradingFactor),
+	updateToQuality(UpdateType, Increment),
+	maximumQuality(UpdateType, Max),
+	minimumQuality(UpdateType, Min),
+	IncrementFactor is (Increment * DegradingFactor),
+	IncrementedQuality is Quality + IncrementFactor,
+	between(Min, Max, IncrementedQuality),
+	NextQuality = IncrementedQuality.
+
+nextSellin(CurrentSellin, AgeingType, NewSellin) :-
+	sellinUpdateAmount(AgeingType, UpdateAmount),
+	IncrementedSellin is CurrentSellin + UpdateAmount,
+	NewSellin = IncrementedSellin.
+	
+
+testDegradingFactor(X):-
+	degradingFactor(1, 1),
+	degradingFactor(0, 2),
+	degradingFactor(-1, 2).
+	
+testUpdateQuality(X):-
+	updateQuality(dexterityVest, 19, 9), 
+	updateQuality(brie, 1, 1), 
+	updateQuality(elixerOfMongoose, 6, 4), 
+	updateQuality(sulfuras, 80, 0), 
+	updateQuality(conjured, 4, 5).
+
 %updateQuality(Item, NewQuality, NewSellin):-
 %	item(Item, UpdateType, AgeingType),
 %	maximumQuality(UpdateType, Max),
@@ -54,55 +99,3 @@ maximumQuality(static, 80).
 %	sellinUpdateAmount(AgeingType, AgeUpdate),
 %	IncrementedSellin is Sellin + AgeUpdate,
 %	NewSellin = IncrementedSellin.
-
-updateQuality(Item, NextQuality, NextSellin):-
-	item(Item, UpdateType, AgeingType),
-	startingQuality(Item, StartingQuality),
-	startingSellin(Item, StartingSellin),
-	nextQuality(StartingQuality, UpdateType, StartingSellin, NextQuality),
-	nextSellin(StartingSellin, AgeingType, NextSellin).
-
-updateQuality(Item, NextQuality, StartingSellin, StartingQuality):-
-	sellin(StartingSellin),
-	item(Item, UpdateType, AgeingType),
-	nextQuality(StartingQuality, UpdateType, StartingSellin, NextQuality),
-	nextSellin(StartingSellin, AgeingType, NextSellin).
-
-
-degradingFactor(-1, 2).
-degradingFactor(0, 1).
-degradingFactor(Sellin, DegradingFactor) :-
-	MinMinusOne is max(-1, Sellin),
-	MaxZero is min(MinMinusOne, 0),
-	degradingFactor(MaxZero, DegradingFactor).
-
-nextQuality(Quality, UpdateType, Sellin, NextQuality) :-
-	degradingFactor(Sellin, DegradingFactor),
-	updateToQuality(UpdateType, Increment),
-	maximumQuality(UpdateType, Max),
-	minimumQuality(UpdateType, Min),
-	IncrementedQuality is Quality + Increment * DegradingFactor,
-	QualityNoGreaterThanMax is min(IncrementedQuality, Max),
-	QualityBetweenMaxMin is max(QualityNoGreaterThanMax, Min),
-	NextQuality = QualityBetweenMaxMin.
-
-nextSellin(CurrentSellin, AgeingType, NewSellin) :-
-	sellinUpdateAmount(AgeingType, UpdateAmount),
-	IncrementedSellin is CurrentSellin + UpdateAmount,
-	NewSellin = IncrementedSellin.
-	
-
-testDegradingFactor(X):-
-	degradingFactor(basicIncrease, 1, 1),
-	degradingFactor(basicIncrease, 0, 1),
-	degradingFactor(basicIncrease, -1, 2),
-	degradingFactor(basicDecrease, 1, 1),
-	degradingFactor(basicDecrease, 0, 1),
-	degradingFactor(basicDecrease, -1, 2).
-	
-testUpdateQuality(X):-
-	updateQuality(dexterityVest, 19, 9), 
-	updateQuality(brie, 1, 1), 
-	updateQuality(elixerOfMongoose, 6, 4), 
-	updateQuality(sulfuras, 80, 0), 
-	updateQuality(conjured, 4, 5).
