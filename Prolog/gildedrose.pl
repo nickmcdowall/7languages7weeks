@@ -18,7 +18,7 @@ startingQuality(elixerOfMongoose, 7).
 startingQuality(sulfuras, 80).
 startingQuality(conjured, 6).
 
-updateToQuality(basicIncrease, +1).
+updateToQuality(basicIncrease, 1).
 updateToQuality(basicDecrease, -1).
 updateToQuality(modestDecrease, -2).
 updateToQuality(static, 0).
@@ -36,8 +36,6 @@ maximumQuality(basicDecrease, 50).
 maximumQuality(modestDecrease, 50).
 maximumQuality(static, 80).
 	
-	
-
 updateQuality(Item, NextQuality, NextSellin):-
 	item(Item, UpdateType, AgeingType),
 	startingQuality(Item, StartingQuality),
@@ -70,32 +68,35 @@ nextSellin(CurrentSellin, AgeingType, NewSellin) :-
 	NewSellin = IncrementedSellin.
 	
 
-testDegradingFactor(X):-
-	degradingFactor(1, 1),
-	degradingFactor(0, 2),
-	degradingFactor(-1, 2).
+testAll :-
+	testNextSellin,
+	testDegradingFactor,
+	testUpdateQuality.
 	
-testUpdateQuality(X):-
-	updateQuality(dexterityVest, 19, 9), 
-	updateQuality(brie, 1, 1), 
-	updateQuality(elixerOfMongoose, 6, 4), 
-	updateQuality(sulfuras, 80, 0), 
-	updateQuality(conjured, 4, 5).
+testNextSellin :-
+	print('-- nextSellin(CurrentSellin, AgeingType, NewSellin) --'), nl,
+	nextSellin(0, canAge, -1), print('ok: '), print(nextSellin(0, canAge, -1)), nl,
+	nextSellin(0, ageless, 0), print('ok: '), print(nextSellin(0, ageless, 0)), nl.
 
-%updateQuality(Item, NewQuality, NewSellin):-
-%	item(Item, UpdateType, AgeingType),
-%	maximumQuality(UpdateType, Max),
-%	minimumQuality(UpdateType, Min),
-%	startingQuality(Item, Quality),
-%	startingSellin(Item, Sellin),
-%	updateToQuality(UpdateType, QUpdate),
-%	MinMinusOne is max(-1, Sellin),
-%	MaxZero is min(MinMinusOne, 0),
-%	degradingFactor(MaxZero, DegradingFactor),
-%	IncrementedQuality is Quality + QUpdate * DegradingFactor,
-%	QualityNoGreaterThanMax is min(IncrementedQuality, Max),
-%	QualityBetweenMaxMin is max(QualityNoGreaterThanMax, Min),
-%	NewQuality = QualityBetweenMaxMin,
-%	sellinUpdateAmount(AgeingType, AgeUpdate),
-%	IncrementedSellin is Sellin + AgeUpdate,
-%	NewSellin = IncrementedSellin.
+testDegradingFactor :-
+	print('-- degradingFactor(Sellin, DegradingFactor) --'), nl,
+	degradingFactor(1, 1), print('ok: '), print(degradingFactor(1, 1)), nl,
+	degradingFactor(0, 2), print('ok: '), print(degradingFactor(0, 2)), nl,
+	degradingFactor(-1, 2), print('ok: '), print(degradingFactor(-1, 2)), nl.
+	
+testUpdateQuality :-
+	print('-- updateQuality(Item, NextQuality, StartingSellin, StartingQuality) --'), nl,
+	updateQuality(dexterityVest, 4, 5, 5), print('ok: '), print(updateQuality(dexterityVest, 4, 5, 5)), nl,
+	updateQuality(dexterityVest, 4, 0, 6), print('ok: '), print(updateQuality(dexterityVest, 4, 0, 6)), nl,
+	updateQuality(brie, 12, 0, 10), print('ok: '), print(updateQuality(brie, 12, 0, 10)), nl,
+	updateQuality(brie, 11, 1, 10), print('ok: '),  print(updateQuality(brie, 11, 1, 10)), nl,
+	updateQuality(sulfuras, 80, 0, 80), print('ok: '), print(updateQuality(sulfuras, 80, 0, 80)), nl,
+	updateQuality(sulfuras, 80, 5, 80), print('ok: '), print(updateQuality(sulfuras, 80, 5, 80)), nl,
+	updateQuality(conjured, 8, 5, 10), print('ok: '), print(updateQuality(conjured, 8, 5, 10)), nl,
+	updateQuality(conjured, 6, 0, 10), print('ok: '), print(updateQuality(conjured, 6, 0, 10)), nl,
+	print('-- updateQuality(Item, NextQuality, NextSellin) --'), nl,
+	updateQuality(dexterityVest, 19, 9), print('ok: '), print(updateQuality(dexterityVest, 19, 9)), nl,
+	updateQuality(brie, 1, 1), print('ok: '), print(updateQuality(brie, 1, 1)), nl,
+	updateQuality(elixerOfMongoose, 6, 4), print('ok: '), print(updateQuality(elixerOfMongoose, 6, 4)), nl,
+	updateQuality(sulfuras, 80, 0), print('ok: '), print(updateQuality(sulfuras, 80, 0)), nl,
+	updateQuality(conjured, 4, 5), print('ok: '), print(updateQuality(conjured, 4, 5)), nl.
