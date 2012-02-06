@@ -20,14 +20,21 @@ startingQuality(sulfuras, 80).
 startingQuality(concertTickets, 20).
 startingQuality(conjured, 6).
 
+minimumQuality(0).
+maximumQuality(50).
+
 qualityUpdateIncrement(brie, +1).
 qualityUpdateIncrement(concertTickets, +1).
 qualityUpdateIncrement(dexterityVest, -1).
 qualityUpdateIncrement(elixerOfMongoose, -1).
 qualityUpdateIncrement(conjured, -2).
 
-minimumQuality(0).
-maximumQuality(50).
+degradingFactor(concertTickets, Sellin, 3):- between(1, 5, Sellin).
+degradingFactor(concertTickets, Sellin, 2):- between(6, 10, Sellin).
+degradingFactor(concertTickets, Sellin, 1):- between(11, inf, Sellin).
+degradingFactor(Item, Sellin, 1):- between(1, inf, Sellin), (Item \= concertTickets).
+degradingFactor(Item, Sellin, 2):- \+between(1, inf, Sellin), (Item \= concertTickets).
+
 
 updateQuality(Item, NextQuality):-
 	item(Item),
@@ -39,7 +46,8 @@ updateQuality(Item, NextQuality, StartingSellin, StartingQuality):-
 	item(Item),
 	(Item \= sulfuras),
 	maximumQuality(MaxQuality),
-	between(0, MaxQuality, StartingQuality),
+	minimumQuality(Min),	
+	between(Min, MaxQuality, StartingQuality),
 	nextQuality(StartingQuality, Item, StartingSellin, NextQuality).
 
 
@@ -52,65 +60,96 @@ nextQuality(CurrentQuality, Item, Sellin, NextQuality) :-
 	between(Min, Max, NextQuality),
 	IncrementFactor is (Increment * DegradingFactor),
 	CurrentQuality is (NextQuality - IncrementFactor).
+nextQuality(CurrentQuality, Item, Sellin, NextQuality) :-
+	degradingFactor(Item, Sellin, DegradingFactor),
+	qualityUpdateIncrement(Item, Increment),
+	maximumQuality(Max),
+	minimumQuality(Min),
+	between(Min, Max, CurrentQuality),
+	IncrementFactor is (Increment * DegradingFactor),
+	Min > (IncrementFactor + CurrentQuality),
+	NextQuality = Min.
+nextQuality(CurrentQuality, Item, Sellin, NextQuality) :-
+	degradingFactor(Item, Sellin, DegradingFactor),
+	qualityUpdateIncrement(Item, Increment),
+	maximumQuality(Max),
+	minimumQuality(Min),
+	between(Min, Max, CurrentQuality),
+	IncrementFactor is (Increment * DegradingFactor),
+	Max < (IncrementFactor + CurrentQuality),
+	NextQuality = Max.
 
-degradingFactor(concertTickets, Sellin, 3):- between(1, 5, Sellin).
-degradingFactor(concertTickets, Sellin, 2):- between(6, 10, Sellin).
-degradingFactor(concertTickets, Sellin, 1):- between(11, inf, Sellin).
-degradingFactor(Item, Sellin, 1):- between(1, inf, Sellin), (Item \= concertTickets).
-degradingFactor(Item, Sellin, 2):- \+between(1, inf, Sellin), (Item \= concertTickets).
 
 	
 %%%%%%%%%%% Tests %%%%%%%%%%%
 
-testExpectations([]).
-testExpectations([Head|Tail]) :-
-	Test =.. Head, print(Test), call(Test), print(' - Pass'), nl,
-	testExpectations(Tail).
+assertTrue([]).
+assertTrue([Head|Tail]) :-
+	Test =.. Head, print('AssertTrue: '), print(Test), call(Test), print(' - Pass'), nl,
+	assertTrue(Tail).
 	
-testNegatives([]).
-testNegatives([Head|Tail]) :-
-	Test =.. Head, print('Not: '), print(Test), \+call(Test), print(' - Pass'), nl,
-	testNegatives(Tail).
+assertFalse([]).
+assertFalse([Head|Tail]) :-
+	Test =.. Head, print('AssertFalse: '), print(Test), \+call(Test), print(' - Pass'), nl,
+	assertFalse(Tail).
 	
 testAll :-
-	print(			'degradingFactor(Item, Sellin, DegradingFactor) -+-'), nl,
-	testExpectations([ 	[degradingFactor, concertTickets, 1, 3],
-				[degradingFactor, concertTickets, 6, 2],
-				[degradingFactor, concertTickets, 11, 1],
-				[degradingFactor, brie, 0, 2],
-				[degradingFactor, brie, 1, 1],
-				[degradingFactor, conjured, -1, 2] ]),
-	testNegatives([		[degradingFactor, concertTickets, 0, 0]	]),
-	print(			'updateQuality(Item, NextQuality) -+-'), nl,
-	testExpectations([ 	[updateQuality, dexterityVest, 19], 
-				[updateQuality, brie, 1], 
-				[updateQuality, elixerOfMongoose, 6], 
-				[updateQuality, sulfuras, 80], 
-				[updateQuality, conjured, 4], 
-				[updateQuality, concertTickets, 21] ]),
-	testNegatives([		[updateQuality, sulfuras, 81] ]),
-	print(			'updateQuality(Item, NextQuality, StartingSellin, StartingQuality) -+-'), nl,
-	testExpectations([ 	[updateQuality, dexterityVest, 4, 5, 5],
-				[updateQuality, dexterityVest, 4, 0, 6],
-				[updateQuality, dexterityVest, 9, 10, 10],
-				[updateQuality, dexterityVest, 8, -1, 10],
-				[updateQuality, brie, 12, 0, 10], 
-				[updateQuality, brie, 11, 1, 10], 	
-				[updateQuality, sulfuras, 80, 0, 80], 	
-				[updateQuality, conjured, 8, 5, 10], 	
-				[updateQuality, conjured, 6, 0, 10], 	
-				[updateQuality, concertTickets, 0, 0, 10], 	
-				[updateQuality, concertTickets, 11, 11, 10],	
-				[updateQuality, concertTickets, 12, 7, 10],	
-				[updateQuality, concertTickets, 13, 5, 10], 	
-				[updateQuality, concertTickets, 0, 0, 50], 	
-				[updateQuality, dexterityVest, 48, 0, 50],	
-				[updateQuality, elixerOfMongoose, 48, 0, 50],
-				[updateQuality, conjured, 46, 0, 50] ]),
-	testNegatives([		[updateQuality, sulfuras, 80, 1, 80],
-				[updateQuality, dexterityVest, 0, 10, 0],
-				[updateQuality, dexterityVest, 0, -1, 1],
-				[updateQuality, concertTickets, 51, 5, 50] ]).			
+	%				  Item, 		Sellin, 	DegradingFactor
+	%				  ---------------	-------		---------------
+	assertTrue([ 	[degradingFactor, concertTickets, 	 1, 		3],
+			[degradingFactor, concertTickets, 	 6, 		2],
+			[degradingFactor, concertTickets, 	11, 		1],
+			[degradingFactor, brie, 		 0, 		2],
+			[degradingFactor, brie, 		 1, 		1],
+			[degradingFactor, conjured, 		-1, 		2] ]),
+				
 	
+	%				Item,			NextQuality
+	%				-----------------	-----------
+	assertTrue([ 	[updateQuality, dexterityVest, 		19], 
+			[updateQuality, brie, 			 1], 
+			[updateQuality, elixerOfMongoose,	 6], 
+			[updateQuality, sulfuras, 		80], 
+			[updateQuality, conjured, 		 4], 
+			[updateQuality, concertTickets, 	21] ]),
 	
+	%				Item, 			NextQuality, 	Sellin,	StartingQuality
+	%				--------------		------------	-------	---------------
+	assertTrue([ 	[updateQuality, dexterityVest, 		 4, 		 5,	 5],
+			[updateQuality, dexterityVest, 		 4, 		 0,	 6],
+			[updateQuality, dexterityVest, 		 9, 		10, 	10],
+			[updateQuality, dexterityVest, 		 8, 		-1, 	10],
+			[updateQuality, dexterityVest, 		 0, 		10, 	 0],
+			[updateQuality, dexterityVest, 		 0, 		-1, 	 1],
+			[updateQuality, brie, 			12, 		 0, 	10], 
+			[updateQuality, brie, 			11, 		 1, 	10], 	
+			[updateQuality, brie, 			50, 		 1, 	50], 	
+			[updateQuality, sulfuras, 		80, 		 0, 	80], 	
+			[updateQuality, conjured, 		 8, 		 5, 	10], 	
+			[updateQuality, conjured, 		 6, 		 0, 	10], 	
+			[updateQuality, conjured, 		 0, 		10, 	 1], 	
+			[updateQuality, concertTickets, 	 0, 		 0, 	10], 	
+			[updateQuality, concertTickets, 	11, 		11, 	10],	
+			[updateQuality, concertTickets, 	12, 		 7, 	10],	
+			[updateQuality, concertTickets, 	13, 		 5, 	10], 	
+			[updateQuality, concertTickets, 	 0, 		 0, 	50], 	
+			[updateQuality, concertTickets, 	 0, 		-1, 	50], 	
+			[updateQuality, dexterityVest, 		48, 		 0, 	50],	
+			[updateQuality, elixerOfMongoose, 	48, 		 0, 	50],
+			[updateQuality, conjured, 		46, 		 0, 	50] ]),
+
+	
+	%				  Item, 		Sellin, 	DegradingFactor
+	%				  ---------------	-------		---------------
+	assertFalse([	[degradingFactor, concertTickets, 	0, 		0] ]),
+
+	%				Item,			NextQuality
+	%				-----------------	-----------
+	assertFalse([	[updateQuality, sulfuras, 		81] ]),
+
+	%				Item, 			NextQuality, 	Sellin,	StartingQuality
+	%				--------------		------------	-------	---------------
+	assertFalse([	[updateQuality, sulfuras, 		80, 		 1, 	80],
+			[updateQuality, sulfuras, 		10, 		 0, 	10],
+			[updateQuality, concertTickets, 	51, 		 5, 	50] ]).			
 	
