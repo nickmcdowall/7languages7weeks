@@ -45,40 +45,38 @@ updateQuality(sulfuras, 80, 0, 80).
 updateQuality(Item, NextQuality, StartingSellin, StartingQuality):-
 	item(Item),
 	(Item \= sulfuras),
-	maximumQuality(MaxQuality),
-	minimumQuality(Min),	
-	between(Min, MaxQuality, StartingQuality),
+	betweenMinMax(StartingQuality),
 	nextQuality(StartingQuality, Item, StartingSellin, NextQuality).
 
 
-nextQuality(_CurrentQuality, Item, Sellin, NextQuality) :- (Sellin < 1), (Item = concertTickets), NextQuality is 0.
+nextQuality(_CurrentQuality, Item, Sellin, 0) :- 
+	(Sellin < 1), 
+	(Item = concertTickets).
 nextQuality(CurrentQuality, Item, Sellin, NextQuality) :-
+	betweenMinMax(NextQuality),
 	degradingFactor(Item, Sellin, DegradingFactor),
 	qualityUpdateIncrement(Item, Increment),
-	maximumQuality(Max),
-	minimumQuality(Min),
-	between(Min, Max, NextQuality),
 	IncrementFactor is (Increment * DegradingFactor),
 	CurrentQuality is (NextQuality - IncrementFactor).
-nextQuality(CurrentQuality, Item, Sellin, NextQuality) :-
+nextQuality(CurrentQuality, Item, Sellin, Min) :-
+	betweenMinMax(CurrentQuality),
 	degradingFactor(Item, Sellin, DegradingFactor),
 	qualityUpdateIncrement(Item, Increment),
-	maximumQuality(Max),
 	minimumQuality(Min),
-	between(Min, Max, CurrentQuality),
 	IncrementFactor is (Increment * DegradingFactor),
-	Min > (IncrementFactor + CurrentQuality),
-	NextQuality = Min.
-nextQuality(CurrentQuality, Item, Sellin, NextQuality) :-
+	Min > (IncrementFactor + CurrentQuality).
+nextQuality(CurrentQuality, Item, Sellin, Max) :-
+	betweenMinMax(CurrentQuality),
 	degradingFactor(Item, Sellin, DegradingFactor),
 	qualityUpdateIncrement(Item, Increment),
-	maximumQuality(Max),
-	minimumQuality(Min),
-	between(Min, Max, CurrentQuality),
 	IncrementFactor is (Increment * DegradingFactor),
-	Max < (IncrementFactor + CurrentQuality),
-	NextQuality = Max.
+	maximumQuality(Max),
+	Max < (IncrementFactor + CurrentQuality).
 
+betweenMinMax(Value):-
+	minimumQuality(Min),
+	maximumQuality(Max),
+	between(Min, Max, Value).
 
 	
 %%%%%%%%%%% Tests %%%%%%%%%%%
@@ -94,15 +92,6 @@ assertFalse([Head|Tail]) :-
 	assertFalse(Tail).
 	
 testAll :-
-	%				  Item, 		Sellin, 	DegradingFactor
-	%				  ---------------	-------		---------------
-	assertTrue([ 	[degradingFactor, concertTickets, 	 1, 		3],
-			[degradingFactor, concertTickets, 	 6, 		2],
-			[degradingFactor, concertTickets, 	11, 		1],
-			[degradingFactor, brie, 		 0, 		2],
-			[degradingFactor, brie, 		 1, 		1],
-			[degradingFactor, conjured, 		-1, 		2] ]),
-				
 	
 	%				Item,			NextQuality
 	%				-----------------	-----------
@@ -121,27 +110,22 @@ testAll :-
 			[updateQuality, dexterityVest, 		 8, 		-1, 	10],
 			[updateQuality, dexterityVest, 		 0, 		10, 	 0],
 			[updateQuality, dexterityVest, 		 0, 		-1, 	 1],
+			[updateQuality, dexterityVest, 		48, 		 0, 	50],	
 			[updateQuality, brie, 			12, 		 0, 	10], 
 			[updateQuality, brie, 			11, 		 1, 	10], 	
 			[updateQuality, brie, 			50, 		 1, 	50], 	
 			[updateQuality, sulfuras, 		80, 		 0, 	80], 	
-			[updateQuality, conjured, 		 8, 		 5, 	10], 	
-			[updateQuality, conjured, 		 6, 		 0, 	10], 	
-			[updateQuality, conjured, 		 0, 		10, 	 1], 	
 			[updateQuality, concertTickets, 	 0, 		 0, 	10], 	
 			[updateQuality, concertTickets, 	11, 		11, 	10],	
 			[updateQuality, concertTickets, 	12, 		 7, 	10],	
 			[updateQuality, concertTickets, 	13, 		 5, 	10], 	
 			[updateQuality, concertTickets, 	 0, 		 0, 	50], 	
 			[updateQuality, concertTickets, 	 0, 		-1, 	50], 	
-			[updateQuality, dexterityVest, 		48, 		 0, 	50],	
 			[updateQuality, elixerOfMongoose, 	48, 		 0, 	50],
+			[updateQuality, conjured, 		 8, 		 5, 	10], 	
+			[updateQuality, conjured, 		 6, 		 0, 	10], 	
+			[updateQuality, conjured, 		 0, 		10, 	 1], 	
 			[updateQuality, conjured, 		46, 		 0, 	50] ]),
-
-	
-	%				  Item, 		Sellin, 	DegradingFactor
-	%				  ---------------	-------		---------------
-	assertFalse([	[degradingFactor, concertTickets, 	0, 		0] ]),
 
 	%				Item,			NextQuality
 	%				-----------------	-----------
@@ -151,5 +135,7 @@ testAll :-
 	%				--------------		------------	-------	---------------
 	assertFalse([	[updateQuality, sulfuras, 		80, 		 1, 	80],
 			[updateQuality, sulfuras, 		10, 		 0, 	10],
+			[updateQuality, elixerOfMongoose,       50, 		 1, 	51],
+			[updateQuality, elixerOfMongoose,        0, 		 1, 	-1],
 			[updateQuality, concertTickets, 	51, 		 5, 	50] ]).			
 	

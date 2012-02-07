@@ -1,5 +1,6 @@
 father(zeb, john_boy_sr).
 father(john_boy_sr, john_boy_jr).
+father(bob, tim).
 
 ancestor(X,Y) :-
 	father(X, Y).
