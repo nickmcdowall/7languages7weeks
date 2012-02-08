@@ -6,22 +6,9 @@ item(sulfuras).
 item(concertTickets).
 item(conjured).
 
-startingSellin(dexterityVest, 10).
-startingSellin(brie, 2).
-startingSellin(elixerOfMongoose, 5).
-startingSellin(sulfuras, 0).
-startingSellin(concertTickets, 15).
-startingSellin(conjured, 6).
-
-startingQuality(dexterityVest, 20).
-startingQuality(brie, 0).
-startingQuality(elixerOfMongoose, 7).
-startingQuality(sulfuras, 80).
-startingQuality(concertTickets, 20).
-startingQuality(conjured, 6).
-
 minimumQuality(0).
 maximumQuality(50).
+maximumSellin(50). % To allow other solutions to be explored - rather than go to infinity.
 
 qualityUpdateIncrement(brie, +1).
 qualityUpdateIncrement(concertTickets, +1).
@@ -31,9 +18,9 @@ qualityUpdateIncrement(conjured, -2).
 
 degradingFactor(concertTickets, Sellin, 3):- between(1, 5, Sellin).
 degradingFactor(concertTickets, Sellin, 2):- between(6, 10, Sellin).
-degradingFactor(concertTickets, Sellin, 1):- between(11, inf, Sellin).
-degradingFactor(Item, Sellin, 1):- between(1, inf, Sellin), (Item \= concertTickets).
-degradingFactor(Item, Sellin, 2):- \+between(1, inf, Sellin), (Item \= concertTickets).
+degradingFactor(concertTickets, Sellin, 1):- maximumSellin(MaxSellin), between(11, MaxSellin, Sellin).
+degradingFactor(Item, Sellin, 1):- (Item \= concertTickets), maximumSellin(MaxSellin), between(1, MaxSellin, Sellin).
+degradingFactor(Item, Sellin, 2):- (Item \= concertTickets), maximumSellin(MaxSellin), \+between(1, MaxSellin, Sellin).
 
 betweenMinMax(Value):-
 	minimumQuality(Min),
@@ -41,16 +28,10 @@ betweenMinMax(Value):-
 	between(Min, Max, Value).
 	
 incrementFactor(Item, Sellin, IncrementFactor):-
-	degradingFactor(Item, Sellin, DegradingFactor),
 	qualityUpdateIncrement(Item, Increment),
+	degradingFactor(Item, Sellin, DegradingFactor),
 	IncrementFactor is (Increment * DegradingFactor).
 
-updateQuality(Item, NextQuality):-
-	item(Item),
-	startingQuality(Item, Quality),
-	startingSellin(Item, Sellin),
-	updateQuality(Item, Sellin, Quality, NextQuality).
-	
 updateQuality(sulfuras, 0, 80, 80).
 updateQuality(Item, Sellin, Quality, NextQuality):-
 	item(Item),
@@ -80,58 +61,49 @@ nextQuality(Item, Sellin, Quality, MaxQuality) :-
 %%%%%%%%%%% Tests %%%%%%%%%%%
 
 assertTrue([]).
-assertTrue([Head|Tail]) :-
-	Test =.. Head, print('AssertTrue: '), print(Test), call(Test), print(' - Pass'), nl,
-	assertTrue(Tail).
+assertTrue([FirstTest|OtherTests]) :-
+	Test =.. FirstTest, print('AssertTrue: '), print(Test), call(Test), print(' - Pass'), nl,
+	assertTrue(OtherTests).
 	
 assertFalse([]).
-assertFalse([Head|Tail]) :-
-	Test =.. Head, print('AssertFalse: '), print(Test), \+call(Test), print(' - Pass'), nl,
-	assertFalse(Tail).
+assertFalse([FirstTest|OtherTests]) :-
+	Test =.. FirstTest, print('AssertFalse: '), print(Test), \+call(Test), print(' - Pass'), nl,
+	assertFalse(OtherTests).
 	
 testAll :-
  
- %                 Item               NextQuality
- %                 -----------------  -----------
- assertTrue([  
-   [updateQuality, dexterityVest,     19], 
-   [updateQuality, brie,               1], 
-   [updateQuality, elixerOfMongoose,   6], 
-   [updateQuality, sulfuras,          80], 
-   [updateQuality, conjured,           4], 
-   [updateQuality, concertTickets,    21] ]),
- 
- %                 Item              Sellin  Quality  NextQuality
- %                 ----------------  ------  -------  -----------
- assertTrue([  
-   [updateQuality, dexterityVest,     5,      5,       4],
-   [updateQuality, dexterityVest,     0,      6,       4],
-   [updateQuality, dexterityVest,    10,     10,       9],
-   [updateQuality, dexterityVest,    -1,     10,       8],
-   [updateQuality, dexterityVest,    10,      0,       0],
-   [updateQuality, dexterityVest,    -1,      1,       0],
-   [updateQuality, dexterityVest,     0,     50,      48], 
-   [updateQuality, brie,              0,     10,      12], 
-   [updateQuality, brie,              1,     10,      11],  
-   [updateQuality, brie,              1,     50,      50],  
-   [updateQuality, sulfuras,          0,     80,      80],  
-   [updateQuality, concertTickets,    0,     10,       0],  
-   [updateQuality, concertTickets,   11,     10,      11], 
-   [updateQuality, concertTickets,    7,     10,      12], 
-   [updateQuality, concertTickets,    5,     10,      13],  
-   [updateQuality, concertTickets,    0,     50,       0],  
-   [updateQuality, concertTickets,   -1,     50,       0],  
-   [updateQuality, elixerOfMongoose,  0,     50,      48],
-   [updateQuality, conjured,          5,     10,       8],  
-   [updateQuality, conjured,          0,     10,       6],  
-   [updateQuality, conjured,         10,      1,       0],  
-   [updateQuality, conjured,          0,     50,      46] ]),
+ %                  Item               Sellin   Quality   NextQuality
+ %                  ----------------   ------   -------   -----------
+ assertTrue([
+    [updateQuality, dexterityVest,       5,       5,        4],
+    [updateQuality, dexterityVest,       0,       6,        4],
+    [updateQuality, dexterityVest,      10,      10,        9],
+    [updateQuality, dexterityVest,      -1,      10,        8],
+    [updateQuality, dexterityVest,      10,       0,        0],
+    [updateQuality, dexterityVest,      -1,       1,        0],
+    [updateQuality, dexterityVest,       0,      50,       48], 
+    [updateQuality, brie,                0,      10,       12], 
+    [updateQuality, brie,                1,      10,       11],  
+    [updateQuality, brie,                1,      50,       50],  
+    [updateQuality, sulfuras,            0,      80,       80],  
+    [updateQuality, concertTickets,      0,      10,        0],  
+    [updateQuality, concertTickets,     11,      10,       11], 
+    [updateQuality, concertTickets,      7,      10,       12], 
+    [updateQuality, concertTickets,      5,      10,       13],  
+    [updateQuality, concertTickets,      0,      50,        0],  
+    [updateQuality, concertTickets,     -1,      50,        0],  
+    [updateQuality, elixerOfMongoose,    0,      50,       48],
+    [updateQuality, conjured,            5,      10,        8],  
+    [updateQuality, conjured,            0,      10,        6],  
+    [updateQuality, conjured,           10,       1,        0],  
+    [updateQuality, conjured,            0,      50,       46], 
+    [updateQuality, _I1,               _S1,     _Q1,      _N1],
+    [updateQuality, _I2,                15,     _Q2,      _N2],
+    [updateQuality, _I3,               _S2,      25,      _N3],
+    [updateQuality, _I4,               _S3,     _Q3,        7],
+    [updateQuality, dexterityVest,     _S4,     _Q4,      _N4]
+ ]),
 
- %                 Item               NextQuality
- %                 -----------------  -----------
- assertFalse([ 
-   [updateQuality, sulfuras,          81],
-   [updateQuality, sulfuras,          79] ]),
 
  %                 Item               Sellin  Quality  NextQuality
  %                 -----------------  ------  -------  -----------
@@ -139,6 +111,7 @@ testAll :-
    [updateQuality, sulfuras,           1,     80,      80],
    [updateQuality, sulfuras,           0,     10,      10],
    [updateQuality, elixerOfMongoose,   1,     51,      50],
-   [updateQuality, elixerOfMongoose,   1,     -1,       0],
-   [updateQuality, concertTickets,    15,     50,      51] ]).   
+   [updateQuality, brie,               5,     -1,       0],
+   [updateQuality, concertTickets,    15,     50,      51] 
+ ]).   
  
