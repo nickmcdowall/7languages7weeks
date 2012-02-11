@@ -1,3 +1,4 @@
+:- use_module(testing).
 
 item(dexterityVest).
 item(brie).
@@ -57,19 +58,8 @@ nextQuality(Item, Sellin, Quality, MaxQuality) :-
 	MaxQuality < (IncrementFactor + Quality).
 
 
-	
 %%%%%%%%%%% Tests %%%%%%%%%%%
 
-assertTrue([]).
-assertTrue([FirstTest|OtherTests]) :-
-	Test =.. FirstTest, print('AssertTrue: '), print(Test), call(Test), print(' - Pass'), nl,
-	assertTrue(OtherTests).
-	
-assertFalse([]).
-assertFalse([FirstTest|OtherTests]) :-
-	Test =.. FirstTest, print('AssertFalse: '), print(Test), \+call(Test), print(' - Pass'), nl,
-	assertFalse(OtherTests).
-	
 testAll :-
  
  %                  Item               Sellin   Quality   NextQuality
