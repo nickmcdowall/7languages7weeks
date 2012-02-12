@@ -1,5 +1,4 @@
-:- use_module(testing).
-:- use_module(utilities).
+:- module(team, [team/1]).
 
 goalie(olly).
 goalie(sam).
@@ -33,32 +32,12 @@ allAvailable([First|Others]) :-
 	\+unavailable(First, _),
 	allAvailable(Others).
 
-team(Goalie, Defender, MidfieldA, MidfieldB, Striker) :-
+team(Team) :-
+	Team = [Goalie, Defender, MidfieldA, MidfieldB, Striker],
 	goalie(Goalie),
 	defender(Defender),
 	midfielder(MidfieldA),
 	midfielder(MidfieldB),
 	striker(Striker),
-	allAvailable([Goalie, Defender, MidfieldA, MidfieldB, Striker]),
-	noDuplicates([Goalie, Defender, MidfieldA, MidfieldB, Striker]).
-	
-
-
-testAll :-
- %                 Goalie   Defender   Mid1   Mid2   Striker
- %                 ------   --------   ----   ----   -------
-    assertTrue([
-        [team,     chucks,  mark,      budd,  olly,  nick   ],
-        [team,     chucks,  mark,      olly,  budd,  nick   ]
-    ]),
-
-    assertFalse([ 
-        [team,     chucks,  mark,      budd,  budd,  nick   ],
-        [team,     chucks,  mark,      olly,  olly,  nick   ],
-        [team,     chucks,  mark,      olly,  budd,  bigNick],
-        [team,     sam,     mark,      budd,  olly,  nick   ],
-        [team,     chucks,  mark,      paul,  olly,  nick   ]
-    ]).
-
-
-
+	allAvailable(Team),
+	is_set(Team).
