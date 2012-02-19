@@ -1,5 +1,18 @@
 :- module(team, [team/1]).
 
+/*
+  Picks a 5 a side football team based on positions players can fill and player availability.
+*/
+team(Team) :-
+	Team = [Goalie, Defender, MidfieldA, MidfieldB, Striker],
+	goalie(Goalie),
+	defender(Defender),
+	midfielder(MidfieldA),
+	midfielder(MidfieldB),
+	striker(Striker),
+	allAvailable(Team),
+	is_set(Team).
+
 goalie(olly).
 goalie(sam).
 goalie(chucks).
@@ -32,12 +45,3 @@ allAvailable([First|Others]) :-
 	\+unavailable(First, _),
 	allAvailable(Others).
 
-team(Team) :-
-	Team = [Goalie, Defender, MidfieldA, MidfieldB, Striker],
-	goalie(Goalie),
-	defender(Defender),
-	midfielder(MidfieldA),
-	midfielder(MidfieldB),
-	striker(Striker),
-	allAvailable(Team),
-	is_set(Team).
