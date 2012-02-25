@@ -1,4 +1,4 @@
-:- use_module('../team').
+:- use_module('../Experiments/team').
 :- use_module('../library/testing').
 
 

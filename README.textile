@@ -1,0 +1,6 @@
+h3=. Seven Languages in Seven Weeks : A Pragmatic Guide to Learning Programming Languages ^Bruce A. Tate^
+
+p>. This repository contains exercises from the book as well as experiments to further explore ideas and to satisfy curiosity.
+
+p<. Each lanugage has its own section with a _Notes_ file containing comments about things I found interesting about the language.
+

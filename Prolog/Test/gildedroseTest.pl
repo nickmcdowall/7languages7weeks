@@ -1,4 +1,4 @@
-:- use_module('../gildedrose').
+:- use_module('../Experiments/gildedrose').
 :- use_module('../library/testing').
 
 testAll :-

@@ -1,0 +1,21 @@
+h1. Prolog
+
+There are many useful functions available in the library that ships with SWI-Prolog including those provided for lists e.g.:
+* member(X, List).
+* is_set(List).
+* permutation(Permutation, Test).
+Discovering <code>permutation</code> while solving puzzles like sudoku and 8-queens was great because it effectively combines <code>member(Element, List)</code> and <code>is_set(List)</code> predicates and is far more efficient.  This leads me to the discovery of the <code>profile(Goal(X))</code> predicate which will show you interesting statistics about any given _Goal_ including the time it takes to run and the number of times each of the sub-goals are invoked.  Similarly the <code>time(Goal(X))</code> predicate will simply describe the length of time the given _Goal_ takes to execute.  Have a look at the library folder which will be somewhere like _C:/Program Files/pl/library_ for all the provided prolog files that ship with SWI-Prolog.
+
+h4. Reusing Modules
+
+Prolog allows you to define modules which can be imported into other files and be reused.  The prolog files provided in the Prolog library menioned in the previous section are loaded automatically, you can import custom modules into other modules by simply using the following predicate at the top of the file:
+
+bq. :- use_module('Experiments/gildedrose').
+
+Note that the file being 'imported' must include the module declaration at the top of the file before it can be imported by other files, e.g. 
+
+bq. :- module(gildedrose, [updateQuality/4]).
+
+h4. Tests
+
+SWI also ships with a _tests.pl_ file which includes various testing utilities however I have not explored these much - instead I created a lightweight testing framework which simply asserts true/false against a set of given expectations and prints the results - see _./library/testing.pl_ to see the definition or see _./Test/gildedroseTest.pl_ for an example of its use.
